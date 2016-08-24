@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -65,6 +67,7 @@ func Funcs() map[string]ast.Function {
 		"file":         interpolationFuncFile(),
 		"format":       interpolationFuncFormat(),
 		"formatlist":   interpolationFuncFormatList(),
+		"gzip":         interpolationFuncGzip(),
 		"index":        interpolationFuncIndex(),
 		"join":         interpolationFuncJoin(),
 		"jsonencode":   interpolationFuncJSONEncode(),
@@ -993,6 +996,31 @@ func interpolationFuncUUID() ast.Function {
 		ReturnType: ast.TypeString,
 		Callback: func(args []interface{}) (interface{}, error) {
 			return uuid.GenerateUUID()
+		},
+	}
+}
+
+// interpolationFuncGzip implements the "gzip" function that allows gzip compression.
+func interpolationFuncGzip() ast.Function {
+	return ast.Function{
+		ArgTypes:   []ast.Type{ast.TypeString},
+		ReturnType: ast.TypeString,
+		Callback: func(args []interface{}) (interface{}, error) {
+			s := args[0].(string)
+
+			var b bytes.Buffer
+			gz := gzip.NewWriter(&b)
+			if _, err := gz.Write([]byte(s)); err != nil {
+				return "", fmt.Errorf("failed to gzip raw data: '%s'", s)
+			}
+			if err := gz.Flush(); err != nil {
+				return "", fmt.Errorf("failed to gzip raw data: '%s'", s)
+			}
+			if err := gz.Close(); err != nil {
+				return "", fmt.Errorf("failed to gzip raw data: '%s'", s)
+			}
+
+			return b.String(), nil
 		},
 	}
 }

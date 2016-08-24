@@ -1626,6 +1626,18 @@ func TestInterpolateFuncUUID(t *testing.T) {
 	}
 }
 
+func TestInterpolateFuncGzip(t *testing.T) {
+	testFunction(t, testFunctionConfig{
+		Cases: []testFunctionCase{
+			{
+				`${base64encode(gzip("test"))}`,
+				"H4sIAAAJbogA/ypJLS4BAAAA//8BAAD//wx+f9gEAAAA",
+				false,
+			},
+		},
+	})
+}
+
 type testFunctionConfig struct {
 	Cases []testFunctionCase
 	Vars  map[string]ast.Variable
